@@ -17,26 +17,30 @@ export const createBooking = async (
   try {
     const userId = (req as any).user.id;
 
-    console.log("BODY:", req.body);
-    console.log("HEADERS:", req.headers);
-
-    if (!req.body) {
-      res.status(400).json({
-        success: false,
-        message: "Request body is missing",
-      });
-    }
-
     const { eventId, seatIds } = req.body;
 
-    if (!eventId || !seatIds || seatIds.length === 0) {
+
+
+    if (!eventId || !Array.isArray(seatIds) || seatIds.length === 0) {
       res.status(400).json({
         success: false,
         message: "Event and Seats are required",
       });
-
       return;
     }
+
+    // Prevent duplicate seat IDs
+    const uniqueSeatIds = [...new Set(seatIds)];
+
+    if (uniqueSeatIds.length !== seatIds.length) {
+      res.status(400).json({
+        success: false,
+        message: "Duplicate seats are not allowed",
+      });
+      return;
+    }
+
+
 
     const event = await prisma.event.findUnique({
       where: {
@@ -49,50 +53,47 @@ export const createBooking = async (
         success: false,
         message: "Event not found",
       });
-
       return;
     }
+
 
     const seats = await prisma.seat.findMany({
       where: {
         id: {
-          in: seatIds,
+          in: uniqueSeatIds,
         },
       },
-
       include: {
         category: true,
       },
     });
 
-    if (seats.length !== seatIds.length) {
+    if (seats.length !== uniqueSeatIds.length) {
       res.status(400).json({
         success: false,
         message: "Some seats not found",
       });
-
       return;
     }
 
-    for (const seat of seats) {
-      if (seat.isBooked) {
-        res.status(400).json({
-          success: false,
-          message: `${seat.seatCode} already booked`,
-        });
 
-        return;
-      }
+    await prisma.seat.updateMany({
+      where: {
+        id: {
+          in: uniqueSeatIds,
+        },
+        isLocked: true,
+        isBooked: false,
+        lockedUntil: {
+          lt: new Date(),
+        },
+      },
+      data: {
+        isLocked: false,
+        lockedUntil: null,
+      },
+    });
 
-      if (seat.isLocked && seat.lockedUntil && seat.lockedUntil > new Date()) {
-        res.status(400).json({
-          success: false,
-          message: `${seat.seatCode} currently locked`,
-        });
-
-        return;
-      }
-    }
 
     let totalAmount = 0;
 
@@ -100,66 +101,117 @@ export const createBooking = async (
       totalAmount += seat.category.price;
     });
 
-    const ticketNumber = await generateTicketNumber();
 
-    const booking = await prisma.$transaction(async (tx) => {
-      const booking = await tx.booking.create({
-        data: {
-          userId,
+    const booking = await prisma.$transaction(
+      async (tx) => {
+        const now = new Date();
 
-          eventId,
+        const lockUntil = new Date(now.getTime() + 10 * 60 * 1000);
 
-          totalAmount,
+    
 
-          bookingStatus: "PENDING",
+        const lockedSeats = await tx.seat.updateMany({
+          where: {
+            id: {
+              in: uniqueSeatIds,
+            },
 
-          paymentStatus: "PENDING",
+            isBooked: false,
 
-          ticketNumber,
-        },
-      });
-
-      await tx.bookingSeat.createMany({
-        data: seatIds.map((seatId: string) => ({
-          bookingId: booking.id,
-
-          seatId,
-        })),
-      });
-
-      await tx.seat.updateMany({
-        where: {
-          id: {
-            in: seatIds,
+            OR: [
+              {
+                isLocked: false,
+              },
+              {
+                isLocked: true,
+                lockedUntil: {
+                  lte: now,
+                },
+              },
+            ],
           },
-        },
-        data: {
-          isLocked: true,
-          lockedUntil: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
-        },
-      });
 
-      return booking;
-    });
+          data: {
+            isLocked: true,
+            lockedUntil: lockUntil,
+          },
+        });
+
+
+        if (lockedSeats.count !== uniqueSeatIds.length) {
+          throw new Error("One or more selected seats are no longer available");
+        }
+
+    
+
+        const ticketNumber = await generateTicketNumber();
+
+   
+        const newBooking = await tx.booking.create({
+          data: {
+            userId,
+            eventId,
+            totalAmount,
+
+            bookingStatus: "PENDING",
+
+            paymentStatus: "PENDING",
+
+            ticketNumber,
+          },
+        });
+
+       
+        await tx.bookingSeat.createMany({
+          data: uniqueSeatIds.map((seatId: string) => ({
+            bookingId: newBooking.id,
+            seatId,
+          })),
+        });
+
+        return {
+          booking: newBooking,
+          lockUntil,
+        };
+      },
+      {
+        isolationLevel: "Serializable",
+      },
+    );
+
+   
 
     res.status(201).json({
       success: true,
 
-      message: "Booking created successfully",
+      message: "Seats locked successfully for 10 minutes",
 
-      bookingId: booking.id,
+      bookingId: booking.booking.id,
 
-      ticketNumber: booking.ticketNumber,
+      ticketNumber: booking.booking.ticketNumber,
 
       totalAmount,
+
+      lockedUntil: booking.lockUntil,
     });
   } catch (error: any) {
-    console.error(error);
+    console.error("Create Booking Error:", error);
+
+    // Seat became unavailable
+    if (
+      error.message === "One or more selected seats are no longer available"
+    ) {
+      res.status(409).json({
+        success: false,
+        message:
+          "One or more selected seats are no longer available. Please select different seats.",
+      });
+      return;
+    }
 
     res.status(500).json({
       success: false,
-
-      message: error.message,
+      message: error.message || "Failed to create booking",
     });
   }
 };

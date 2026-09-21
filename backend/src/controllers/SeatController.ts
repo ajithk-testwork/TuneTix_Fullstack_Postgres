@@ -7,6 +7,30 @@ const getParamString = (
   return Array.isArray(value) ? value[0] : value;
 };
 
+export const releaseExpiredSeats = async () => {
+  try {
+    const result = await prisma.seat.updateMany({
+      where: {
+        isLocked: true,
+        lockedUntil: {
+          lt: new Date(),
+        },
+        isBooked: false,
+      },
+      data: {
+        isLocked: false,
+        lockedUntil: null,
+      },
+    });
+
+    if (result.count > 0) {
+      console.log(`🔓 Released ${result.count} expired seat(s)`);
+    }
+  } catch (error) {
+    console.error("Expired seat cleanup error:", error);
+  }
+};
+
 export const generateSeats = async (
   req: Request,
   res: Response,
@@ -92,6 +116,7 @@ export const getSeatLayout = async (
   res: Response,
 ): Promise<void> => {
   try {
+    await releaseExpiredSeats();
     const eventId = getParamString(req.params.eventId);
 
     if (!eventId) {

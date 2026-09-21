@@ -10,12 +10,12 @@ import paymentRoutes from "./routes/paymentRoutes";
 import http from "http";
 import { initializeSocket } from "./socket";
 import cors from "cors";
+import { releaseExpiredSeats } from "./controllers/SeatController";
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-
 
 const allowedOrigins = [
   "http://localhost:5173",
@@ -26,7 +26,6 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: (origin, callback) => {
-     
       if (!origin) {
         return callback(null, true);
       }
@@ -48,8 +47,6 @@ app.use(
   }),
 );
 
-
-
 app.use(
   "/api/payment/webhook",
   express.raw({
@@ -57,13 +54,9 @@ app.use(
   }),
 );
 
-
-
 app.use(express.json());
 
 app.use(express.urlencoded({ extended: true }));
-
-
 
 app.use("/api", authRoutes);
 app.use("/api", eventRoutes);
@@ -72,12 +65,23 @@ app.use("/api", seatRoutes);
 app.use("/api", bookingRoutes);
 app.use("/api", paymentRoutes);
 
-
 async function startServer() {
   try {
     await prisma.$connect();
 
     console.log("✅ PostgreSql Connected Successfully");
+
+    
+    await releaseExpiredSeats();
+
+    // Check every 30 seconds
+    setInterval(async () => {
+      await releaseExpiredSeats();
+    }, 30 * 1000);
+
+    console.log("🔄 Seat expiration cleanup started");
+
+   
 
     const server = http.createServer(app);
 
