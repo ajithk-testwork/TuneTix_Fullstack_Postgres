@@ -18,7 +18,6 @@ import {
   Loader2,
 } from "lucide-react";
 import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
 import API from "../../api/adminAPI";
 
 interface CheckInResult {
