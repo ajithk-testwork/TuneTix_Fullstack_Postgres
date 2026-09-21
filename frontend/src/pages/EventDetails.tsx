@@ -76,10 +76,7 @@ const EventDetails = () => {
     hidden: { opacity: 0 },
     show: { opacity: 1, transition: { staggerChildren: 0.1 } },
   };
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 120 } },
-  };
+
 
   // Pricing Logic based on Backend's seatCategories
   const getDisplayPrice = () => {
@@ -152,7 +149,7 @@ const EventDetails = () => {
           >
             {/* Header Card */}
             <motion.div
-              variants={itemVariants}
+              
               className="bg-[#0F172A]/80 backdrop-blur-xl border border-[#1E293B] rounded-[2.5rem] p-8 sm:p-10 shadow-[0_10px_40px_rgba(0,0,0,0.3)]"
             >
               <div className="flex flex-wrap gap-3 mb-6">
@@ -172,7 +169,7 @@ const EventDetails = () => {
 
             {/* Meta Grid (Dark Neon Cards) */}
             <motion.div
-              variants={itemVariants}
+             
               className="grid grid-cols-2 md:grid-cols-4 gap-5"
             >
               <div className="bg-[#1E293B]/40 backdrop-blur-md border border-[#334155] rounded-3xl p-5 flex flex-col gap-3 hover:border-[#6C5CE7]/50 hover:bg-[#1E293B]/80 hover:shadow-[0_0_20px_rgba(108,92,231,0.15)] transition-all">
@@ -241,7 +238,7 @@ const EventDetails = () => {
 
             {/* Description & Policy */}
             <motion.div
-              variants={itemVariants}
+             
               className="bg-[#0F172A]/80 backdrop-blur-xl border border-[#1E293B] rounded-[2.5rem] p-8 sm:p-10 flex flex-col gap-10 shadow-[0_10px_40px_rgba(0,0,0,0.3)]"
             >
               <div>

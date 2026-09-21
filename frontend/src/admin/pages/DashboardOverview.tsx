@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   CalendarDays, 
   Users, 
   IndianRupee, 
-  TrendingUp, 
   ArrowUpRight, 
   Ticket, 
   Activity, 
@@ -130,8 +129,6 @@ const DashboardOverview = () => {
     );
   }
 
-  // Calculate top performing events sorted by revenue
-  const topEvents = [...eventPerformance].sort((a, b) => b.revenue - a.revenue).slice(0, 3);
 
   // --- Animation Variants ---
   const containerVariants = {

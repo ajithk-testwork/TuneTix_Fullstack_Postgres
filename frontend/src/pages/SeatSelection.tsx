@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Loader2, X, Lock, Armchair, Ticket, ZoomIn, ZoomOut, Maximize, Map } from "lucide-react";
 import toast from "react-hot-toast";
-import { motion, AnimatePresence, type Variants } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import API from "../api/userAPI";
 
 interface Seat {
@@ -26,10 +26,7 @@ interface SeatCategory {
 
 
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 30, scale: 0.95 },
-  show: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", stiffness: 120 } },
-};
+
 
 const SeatSelection = () => {
   const { id } = useParams();
@@ -284,7 +281,7 @@ const SeatSelection = () => {
                   return (
                     <motion.div
                       key={category.id}
-                      variants={itemVariants}
+                    
                       className={`w-full ${widthClass} mb-12 px-4`}
                     >
                       {/* Category Header Card */}

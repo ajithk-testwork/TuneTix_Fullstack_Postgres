@@ -34,14 +34,6 @@ const containerVariants = {
   },
 };
 
-const sectionVariants = {
-  hidden: { opacity: 0, y: 16 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] },
-  },
-};
 
 const CreateEvent: React.FC = () => {
   const navigate = useNavigate(); // Initialize navigation
@@ -208,7 +200,8 @@ const CreateEvent: React.FC = () => {
     >
       {/* Header Section */}
       <motion.div
-        variants={sectionVariants}
+       
+
         className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-gray-100 pb-6"
       >
         <div>
@@ -253,7 +246,7 @@ const CreateEvent: React.FC = () => {
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Section 1: Artwork */}
         <motion.section
-          variants={sectionVariants}
+          
           className="bg-white rounded-2xl shadow-sm border border-gray-200/80 overflow-hidden"
         >
           <div className="bg-gray-50/60 px-8 py-5 border-b border-gray-100 flex items-center justify-between">
@@ -331,7 +324,7 @@ const CreateEvent: React.FC = () => {
 
         {/* Section 2: Details */}
         <motion.section
-          variants={sectionVariants}
+          
           className="bg-white rounded-2xl shadow-sm border border-gray-200/80 overflow-hidden"
         >
           <div className="bg-gray-50/60 px-8 py-5 border-b border-gray-100">
@@ -518,7 +511,7 @@ const CreateEvent: React.FC = () => {
 
         {/* Section 3: Date & Location */}
         <motion.section
-          variants={sectionVariants}
+          
           className="bg-white rounded-2xl shadow-sm border border-gray-200/80 overflow-hidden"
         >
           <div className="bg-gray-50/60 px-8 py-5 border-b border-gray-100">
@@ -612,7 +605,7 @@ const CreateEvent: React.FC = () => {
 
         {/* Actions */}
         <motion.div
-          variants={sectionVariants}
+         
           className="flex items-center justify-end gap-4 pt-4"
         >
           <button

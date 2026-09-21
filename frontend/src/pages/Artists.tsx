@@ -58,10 +58,7 @@ const Artists = () => {
     }
   };
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
-    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
-  };
+ 
 
   return (
     // Base Dark Theme Container
@@ -137,7 +134,7 @@ const Artists = () => {
           <AnimatePresence mode="popLayout">
             {filteredArtists.map((artist) => (
               <motion.div
-                variants={itemVariants}
+                
                 key={artist.id}
                 onClick={() => setSelectedArtist(artist)}
                 className="group relative aspect-[4/5] mx-auto w-full max-w-[320px] rounded-3xl overflow-hidden cursor-pointer bg-[#0F172A] border border-[#1E293B] hover:border-[#6C5CE7]/50 transition-all duration-500 shadow-[0_10px_20px_rgba(0,0,0,0.3)] hover:shadow-[0_0_30px_rgba(108,92,231,0.25)]"

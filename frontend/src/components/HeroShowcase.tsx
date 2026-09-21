@@ -16,18 +16,11 @@ interface HeroShowcaseProps {
   fetchTrendingEvents: () => Promise<TrendingEvent[]>;
 }
 
-const getFadeUpVariants = (shouldReduceMotion: boolean | null) => ({
-  hidden: { opacity: 0, y: shouldReduceMotion ? 0 : 30 },
-  visible: { 
-    opacity: 1, 
-    y: 0, 
-    transition: { duration: 0.8, ease: "easeOut" } 
-  }
-});
+
 
 const HeroShowcase: React.FC<HeroShowcaseProps> = ({ onSearch, fetchTrendingEvents }) => {
   const shouldReduceMotion = useReducedMotion();
-  const fadeUp = getFadeUpVariants(shouldReduceMotion);
+
   const navigate = useNavigate();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -79,7 +72,7 @@ const HeroShowcase: React.FC<HeroShowcaseProps> = ({ onSearch, fetchTrendingEven
           className="lg:col-span-7 flex flex-col items-start"
           initial="hidden"
           animate="visible"
-          variants={fadeUp}
+          
         >
           {/* Glassmorphism Badge */}
           <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 text-[#00B4D8] text-xs font-[800] uppercase tracking-widest mb-8 shadow-[0_0_20px_rgba(0,180,216,0.15)]">
@@ -128,7 +121,7 @@ const HeroShowcase: React.FC<HeroShowcaseProps> = ({ onSearch, fetchTrendingEven
           className="lg:col-span-5 relative"
           initial="hidden"
           animate="visible"
-          variants={fadeUp}
+         
           transition={{ delay: shouldReduceMotion ? 0 : 0.2 }}
         >
           {/* Frosted Glass Panel */}

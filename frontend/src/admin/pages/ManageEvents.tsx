@@ -3,9 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Calendar,
   MapPin,
-  Ticket,
   Search,
-  MoreVertical,
   ArrowUpRight,
   IndianRupee,
   Loader2,

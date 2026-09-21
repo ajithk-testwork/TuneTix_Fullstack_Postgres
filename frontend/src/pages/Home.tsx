@@ -23,11 +23,7 @@ const Home = () => {
   const [selectedCategory, setSelectedCategory] = useState('ALL');
 
   useEffect(() => {
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      setUser(JSON.parse(userData));
-    }
-
+    
     const fetchEvents = async () => {
       try {
         setIsLoading(true);
@@ -105,12 +101,12 @@ const Home = () => {
         >
           <AnimatePresence mode='popLayout'>
             {isLoading ? (
-               <motion.div variants={itemVariants} className="col-span-full flex flex-col items-center justify-center py-24 bg-[#FFFFFF] border border-gray-100 rounded-[2rem] shadow-sm">
+               <motion.div  className="col-span-full flex flex-col items-center justify-center py-24 bg-[#FFFFFF] border border-gray-100 rounded-[2rem] shadow-sm">
                  <Loader2 className="w-8 h-8 text-[#6C5CE7] animate-spin mb-4" />
                  <p className="text-[#667085] text-sm font-[700]">Synchronizing data...</p>
                </motion.div>
             ) : filteredEvents.length === 0 ? (
-               <motion.div variants={itemVariants} className="col-span-full flex flex-col items-center justify-center py-24 bg-[#FFFFFF] border border-gray-100 rounded-[2rem] shadow-sm">
+               <motion.div  className="col-span-full flex flex-col items-center justify-center py-24 bg-[#FFFFFF] border border-gray-100 rounded-[2rem] shadow-sm">
                  <XCircle className="w-10 h-10 text-gray-300 mb-4" />
                  <p className="text-[#172033] font-[800] text-lg">No events found</p>
                  <p className="text-[#667085] text-sm mt-1 font-[500]">Try adjusting your search or category filters.</p>

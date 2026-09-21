@@ -1,7 +1,7 @@
-import React from 'react';
+
 import { Music } from 'lucide-react';
 
-// Custom GitHub SVG Icon to replace the missing Lucide one
+
 const GithubIcon = ({ className }: { className?: string }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
