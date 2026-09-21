@@ -1346,7 +1346,7 @@ const eventImageSection = eventImage
         >
 
           <a
-           href="http://localhost:5173/ticket/${bookingId}"
+           href="https://tune-tix-fullstack-postgres-kszh.vercel.app/ticket/${bookingId}"
             style="
               display:inline-block;
               background:#6C5CE7;
