@@ -1,19 +1,22 @@
 import { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Mail, Loader2, ArrowLeft } from "lucide-react";
 import toast from "react-hot-toast";
 import API from "../../api/userAPI";
 
-
+interface LocationState {
+  email?: string;
+  name?: string;
+}
 
 const VerifyEmail = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
+  const state = location.state as LocationState | null;
 
-  
-
-  
+  const [email, setEmail] = useState(state?.email || "");
   const [otp, setOtp] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResending, setIsResending] = useState(false);
@@ -31,7 +34,11 @@ const VerifyEmail = () => {
   }, [resendTimer]);
 
   const handleVerify = async () => {
-   
+    if (!email) {
+      toast.error("Email is missing");
+      return;
+    }
+
     if (!/^\d{6}$/.test(otp)) {
       toast.error("Please enter a valid 6-digit OTP");
       return;
@@ -43,7 +50,7 @@ const VerifyEmail = () => {
       const res = await API.post(
         "/auth/verify-registration-otp",
         {
-         
+          email,
           otp,
         }
       );
@@ -64,7 +71,10 @@ const VerifyEmail = () => {
   };
 
   const handleResend = async () => {
-    
+    if (!email) {
+      toast.error("Email is missing");
+      return;
+    }
 
     if (resendTimer > 0) {
       return;
@@ -75,7 +85,9 @@ const VerifyEmail = () => {
 
       const res = await API.post(
         "/auth/resend-registration-otp",
-       
+        {
+          email,
+        }
       );
 
       toast.success(
@@ -121,7 +133,7 @@ const VerifyEmail = () => {
             We sent a 6-digit verification code to
           </p>
           <p className="text-[#172033] font-[700] text-sm mt-1 break-all">
-            { "your email"}
+            {email || "your email"}
           </p>
         </div>
 
