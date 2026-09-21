@@ -11,6 +11,7 @@ import {
   adminLogin,
   adminForgotPassword,
   adminResetPassword,
+  scannerLogin,
 } from "../controllers/UserController";
 
 import { protect } from "../middleware/authmiddleware";
@@ -36,6 +37,7 @@ router.post("/auth/logout", protect, userLogout);
 //Admin Auth
 
 router.post("/auth/admin/login", adminLogin);
+router.post("/scanner/login", scannerLogin)
 router.post("/auth/admin/forgot-password", adminForgotPassword);
 router.post("/auth/admin/reset-password", adminResetPassword);
 

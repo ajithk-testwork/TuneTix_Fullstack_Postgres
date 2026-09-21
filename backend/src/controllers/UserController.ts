@@ -766,6 +766,89 @@ export const adminLogin = async (
   }
 };
 
+export const scannerLogin = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      res.status(400).json({
+        success: false,
+        message: "Email and password are required",
+      });
+      return;
+    }
+
+    const user = await prisma.user.findUnique({
+      where: {
+        email: email.toLowerCase().trim(),
+      },
+    });
+
+    if (!user) {
+      res.status(401).json({
+        success: false,
+        message: "Invalid scanner credentials",
+      });
+      return;
+    }
+
+    if (user.role !== "ADMIN") {
+      res.status(403).json({
+        success: false,
+        message: "Scanner access denied",
+      });
+      return;
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      res.status(401).json({
+        success: false,
+        message: "Invalid scanner credentials",
+      });
+      return;
+    }
+
+    const token = Jwt.sign(
+      {
+        id: user.id,
+        role: user.role,
+        isAdmin: true,
+        purpose: "SCANNER",
+      },
+      process.env.JWT_SECRET as string,
+      {
+        expiresIn: "12h",
+      },
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Scanner login successful",
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phoneNumber: user.phoneNumber,
+        role: user.role,
+      },
+    });
+  } catch (error: any) {
+    console.error("Scanner Login Error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Scanner login failed",
+      error: error.message,
+    });
+  }
+};
+
 export const adminForgotPassword = async (
   req: Request,
   res: Response,
@@ -789,7 +872,7 @@ export const adminForgotPassword = async (
       },
     });
 
-    if (!user || user.role !== "ADMIN" && user.role !== "SUPER_ADMIN") {
+    if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {
       res.status(200).json({
         success: false,
         message:
