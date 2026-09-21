@@ -16,7 +16,7 @@ const VerifyEmail = () => {
 
   const state = location.state as LocationState | null;
 
-  const [email, setEmail] = useState(state?.email || "");
+ const email = state?.email || "";
   const [otp, setOtp] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResending, setIsResending] = useState(false);
