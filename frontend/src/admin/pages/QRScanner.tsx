@@ -47,7 +47,7 @@ interface CheckInResult {
 }
 
 const QRScanner = () => {
-  const navigate = useNavigate();
+ 
   const scannerRef = useRef<Html5Qrcode | null>(null);
 
   // Scanner States
