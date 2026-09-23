@@ -17,10 +17,26 @@ import {
   Globe,
   UserCheck,
   Mic2,
-  Building2
+  Building2,
 } from "lucide-react";
 import API from "../api/userAPI";
 import toast from "react-hot-toast";
+
+// Utility function to format 24-hour time to 12-hour AM/PM format
+const formatTimeWithAMPM = (time24: string) => {
+  if (!time24) return "TBA";
+
+  const [hourString, minute] = time24.split(":");
+  if (!hourString || !minute) return time24; // Fallback if format is unexpected
+
+  let hour = parseInt(hourString, 10);
+  const ampm = hour >= 12 ? "PM" : "AM";
+
+  hour = hour % 12;
+  hour = hour ? hour : 12; // '0' becomes '12'
+
+  return `${hour}:${minute} ${ampm}`;
+};
 
 const EventDetails = () => {
   const { id } = useParams();
@@ -45,9 +61,9 @@ const EventDetails = () => {
               color: "#F8FAFC",
               border: "1px solid rgba(244, 63, 94, 0.4)",
               borderRadius: "16px",
-              boxShadow: "0 0 20px rgba(244, 63, 94, 0.2)"
+              boxShadow: "0 0 20px rgba(244, 63, 94, 0.2)",
             },
-          }
+          },
         );
         navigate("/");
       } finally {
@@ -77,7 +93,6 @@ const EventDetails = () => {
     show: { opacity: 1, transition: { staggerChildren: 0.1 } },
   };
 
-
   // Pricing Logic based on Backend's seatCategories
   const getDisplayPrice = () => {
     if (event.seatCategories && event.seatCategories.length > 0) {
@@ -85,10 +100,11 @@ const EventDetails = () => {
       const minPrice = Math.min(...prices);
       return minPrice === 0 || isNaN(minPrice) ? "Free" : `₹${minPrice}`;
     }
-    
+
     // Fallback if seatCategories is missing but price exists
     const fallbackPrice = Number(event.price);
-    if (!fallbackPrice || fallbackPrice === 0 || isNaN(fallbackPrice)) return "Free";
+    if (!fallbackPrice || fallbackPrice === 0 || isNaN(fallbackPrice))
+      return "Free";
     return `₹${fallbackPrice}`;
   };
 
@@ -101,7 +117,6 @@ const EventDetails = () => {
 
   return (
     <div className="relative min-h-screen bg-[#020617] text-[#F8FAFC] font-sans selection:bg-[#6C5CE7]/40 selection:text-white overflow-x-hidden pb-24">
-      
       {/* Deep Ambient Background Glows */}
       <div className="fixed top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#6C5CE7]/15 rounded-full blur-[150px] pointer-events-none z-0" />
       <div className="fixed bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#00B4D8]/10 rounded-full blur-[150px] pointer-events-none z-0" />
@@ -118,7 +133,6 @@ const EventDetails = () => {
 
       {/* Main Content Layout */}
       <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pt-32 pb-12">
-        
         {/* Cinematic Banner Image */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -139,7 +153,6 @@ const EventDetails = () => {
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
           {/* ================= LEFT COLUMN: DETAILS ================= */}
           <motion.div
             variants={containerVariants}
@@ -148,10 +161,7 @@ const EventDetails = () => {
             className="lg:col-span-8 flex flex-col gap-8"
           >
             {/* Header Card */}
-            <motion.div
-              
-              className="bg-[#0F172A]/80 backdrop-blur-xl border border-[#1E293B] rounded-[2.5rem] p-8 sm:p-10 shadow-[0_10px_40px_rgba(0,0,0,0.3)]"
-            >
+            <motion.div className="bg-[#0F172A]/80 backdrop-blur-xl border border-[#1E293B] rounded-[2.5rem] p-8 sm:p-10 shadow-[0_10px_40px_rgba(0,0,0,0.3)]">
               <div className="flex flex-wrap gap-3 mb-6">
                 <span className="bg-[#6C5CE7]/10 border border-[#6C5CE7]/30 text-[#6C5CE7] text-xs font-[800] uppercase tracking-widest px-4 py-1.5 rounded-full flex items-center gap-1.5 shadow-[0_0_15px_rgba(108,92,231,0.2)]">
                   <Sparkles className="w-3.5 h-3.5" />
@@ -168,16 +178,15 @@ const EventDetails = () => {
             </motion.div>
 
             {/* Meta Grid (Dark Neon Cards) */}
-            <motion.div
-             
-              className="grid grid-cols-2 md:grid-cols-4 gap-5"
-            >
+            <motion.div className="grid grid-cols-2 md:grid-cols-4 gap-5">
               <div className="bg-[#1E293B]/40 backdrop-blur-md border border-[#334155] rounded-3xl p-5 flex flex-col gap-3 hover:border-[#6C5CE7]/50 hover:bg-[#1E293B]/80 hover:shadow-[0_0_20px_rgba(108,92,231,0.15)] transition-all">
                 <div className="w-10 h-10 rounded-xl bg-[#020617] border border-[#1E293B] flex items-center justify-center text-[#6C5CE7] shadow-inner">
                   <Calendar className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-[10px] text-[#64748B] font-[800] uppercase tracking-widest mb-1">Date</p>
+                  <p className="text-[10px] text-[#64748B] font-[800] uppercase tracking-widest mb-1">
+                    Date
+                  </p>
                   <p className="text-sm font-[800] text-[#F8FAFC]">
                     {event.date
                       ? new Date(event.date).toLocaleDateString(undefined, {
@@ -190,13 +199,18 @@ const EventDetails = () => {
                 </div>
               </div>
 
+              {/* ===== FORMATTED TIME CARD ===== */}
               <div className="bg-[#1E293B]/40 backdrop-blur-md border border-[#334155] rounded-3xl p-5 flex flex-col gap-3 hover:border-[#00B4D8]/50 hover:bg-[#1E293B]/80 hover:shadow-[0_0_20px_rgba(0,180,216,0.15)] transition-all">
                 <div className="w-10 h-10 rounded-xl bg-[#020617] border border-[#1E293B] flex items-center justify-center text-[#00B4D8] shadow-inner">
                   <Clock className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-[10px] text-[#64748B] font-[800] uppercase tracking-widest mb-1">Time</p>
-                  <p className="text-sm font-[800] text-[#F8FAFC]">{event.time || "TBA"}</p>
+                  <p className="text-[10px] text-[#64748B] font-[800] uppercase tracking-widest mb-1">
+                    Time
+                  </p>
+                  <p className="text-sm font-[800] text-[#F8FAFC]">
+                    {formatTimeWithAMPM(event.time)}
+                  </p>
                 </div>
               </div>
 
@@ -205,7 +219,9 @@ const EventDetails = () => {
                   <Timer className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-[10px] text-[#64748B] font-[800] uppercase tracking-widest mb-1">Duration</p>
+                  <p className="text-[10px] text-[#64748B] font-[800] uppercase tracking-widest mb-1">
+                    Duration
+                  </p>
                   <p className="text-sm font-[800] text-[#F8FAFC]">
                     {event.duration ? `${event.duration} Mins` : "TBA"}
                   </p>
@@ -217,8 +233,12 @@ const EventDetails = () => {
                   <Globe className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-[10px] text-[#64748B] font-[800] uppercase tracking-widest mb-1">Language</p>
-                  <p className="text-sm font-[800] text-[#F8FAFC]">{event.language || "TBA"}</p>
+                  <p className="text-[10px] text-[#64748B] font-[800] uppercase tracking-widest mb-1">
+                    Language
+                  </p>
+                  <p className="text-sm font-[800] text-[#F8FAFC]">
+                    {event.language || "TBA"}
+                  </p>
                 </div>
               </div>
 
@@ -228,7 +248,9 @@ const EventDetails = () => {
                   <MapPin className="w-6 h-6" />
                 </div>
                 <div>
-                  <p className="text-[10px] text-[#64748B] font-[800] uppercase tracking-widest mb-1">Venue & Location</p>
+                  <p className="text-[10px] text-[#64748B] font-[800] uppercase tracking-widest mb-1">
+                    Venue & Location
+                  </p>
                   <p className="text-base font-[800] text-[#F8FAFC]">
                     {event.venue}, {event.location}
                   </p>
@@ -237,10 +259,7 @@ const EventDetails = () => {
             </motion.div>
 
             {/* Description & Policy */}
-            <motion.div
-             
-              className="bg-[#0F172A]/80 backdrop-blur-xl border border-[#1E293B] rounded-[2.5rem] p-8 sm:p-10 flex flex-col gap-10 shadow-[0_10px_40px_rgba(0,0,0,0.3)]"
-            >
+            <motion.div className="bg-[#0F172A]/80 backdrop-blur-xl border border-[#1E293B] rounded-[2.5rem] p-8 sm:p-10 flex flex-col gap-10 shadow-[0_10px_40px_rgba(0,0,0,0.3)]">
               <div>
                 <h3 className="text-2xl font-[900] text-[#F8FAFC] mb-5 flex items-center gap-3">
                   <Info className="w-6 h-6 text-[#00B4D8]" /> About Event
@@ -252,16 +271,19 @@ const EventDetails = () => {
 
               <div className="pt-8 border-t border-[#1E293B]">
                 <h4 className="text-xl font-[900] text-[#F8FAFC] mb-5 flex items-center gap-3">
-                  <ShieldCheck className="w-6 h-6 text-[#6C5CE7]" /> Access Policy
+                  <ShieldCheck className="w-6 h-6 text-[#6C5CE7]" /> Access
+                  Policy
                 </h4>
                 <ul className="space-y-4">
                   <li className="flex items-start gap-4 text-[#94A3B8] font-[500] text-sm">
                     <UserCheck className="w-5 h-5 text-[#F43F5E] mt-0.5 shrink-0" />
-                    Minimum age limit for this event is {event.minimumAge}+ years.
+                    Minimum age limit for this event is {event.minimumAge}+
+                    years.
                   </li>
                   <li className="flex items-start gap-4 text-[#94A3B8] font-[500] text-sm">
                     <span className="w-2 h-2 rounded-full bg-[#6C5CE7] mt-2 ml-1.5 shrink-0 shadow-[0_0_8px_rgba(108,92,231,0.8)]" />
-                    Tickets are strictly non-refundable and non-transferable under standard protocol.
+                    Tickets are strictly non-refundable and non-transferable
+                    under standard protocol.
                   </li>
                 </ul>
               </div>
@@ -312,23 +334,26 @@ const EventDetails = () => {
             {/* Organizer Widget */}
             <div className="bg-[#0F172A]/80 backdrop-blur-xl border border-[#1E293B] rounded-[2rem] p-6 shadow-md">
               <h4 className="font-[800] text-[#64748B] text-xs uppercase tracking-widest mb-5 flex items-center gap-2">
-                <Building2 className="w-4 h-4 text-[#00B4D8]" /> Event Organized By
+                <Building2 className="w-4 h-4 text-[#00B4D8]" /> Event Organized
+                By
               </h4>
               <div className="flex items-center gap-4">
                 <div className="w-14 h-14 bg-[#020617] border border-[#1E293B] rounded-full flex items-center justify-center text-[#6C5CE7] font-[900] text-xl shrink-0 shadow-inner">
-                  {event.organizer ? event.organizer.charAt(0).toUpperCase() : "O"}
+                  {event.organizer
+                    ? event.organizer.charAt(0).toUpperCase()
+                    : "O"}
                 </div>
                 <div>
-                  <p className="font-[800] text-[#F8FAFC] text-base tracking-wide">{event.organizer || "Official Organizer"}</p>
+                  <p className="font-[800] text-[#F8FAFC] text-base tracking-wide">
+                    {event.organizer || "Official Organizer"}
+                  </p>
                   <p className="text-[10px] font-[800] text-[#10B981] flex items-center gap-1.5 mt-1.5 uppercase tracking-widest">
                     <ShieldCheck className="w-3.5 h-3.5" /> Verified Partner
                   </p>
                 </div>
               </div>
             </div>
-
           </motion.div>
-          
         </div>
       </main>
     </div>

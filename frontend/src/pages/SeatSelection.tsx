@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
   ArrowLeft,
   Loader2,
@@ -11,6 +11,7 @@ import {
   ZoomOut,
   Maximize,
   Map,
+  UserCircle2,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
@@ -40,6 +41,7 @@ interface SeatCategory {
 const SeatSelection = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation(); // To pass the return url to login
   const [categories, setCategories] = useState<SeatCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentTime, setCurrentTime] = useState(Date.now());
@@ -47,8 +49,9 @@ const SeatSelection = () => {
     { seat: Seat; category: SeatCategory }[]
   >([]);
 
-  // Mini-map State
+  // Modals State
   const [showMiniMap, setShowMiniMap] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false); // Auth Modal State
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -75,8 +78,6 @@ const SeatSelection = () => {
     return () => clearInterval(interval);
   }, [id]);
 
-
-  
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(Date.now());
@@ -138,6 +139,14 @@ const SeatSelection = () => {
   };
 
   const handleCheckout = async () => {
+    // 1. Authenticate check before firing API
+    const user = localStorage.getItem("user");
+    if (!user) {
+      setShowAuthModal(true);
+      return;
+    }
+
+    // 2. Proceed to Checkout if Authenticated
     try {
       const bookingRes = await API.post("/booking", {
         eventId: id,
@@ -152,6 +161,12 @@ const SeatSelection = () => {
 
       window.location.href = paymentRes.data.checkoutUrl;
     } catch (error: any) {
+      // If server returns unauthorized, also pop up the modal just in case
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        setShowAuthModal(true);
+        return;
+      }
+
       toast.error(error.response?.data?.message || "Checkout Failed", {
         style: {
           background: "#0F172A",
@@ -184,6 +199,70 @@ const SeatSelection = () => {
       {/* Deep Ambient Background Glows */}
       <div className="fixed top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#6C5CE7]/10 rounded-full blur-[150px] pointer-events-none z-0" />
       <div className="fixed bottom-[10%] right-[-10%] w-[40%] h-[40%] bg-[#00B4D8]/10 rounded-full blur-[150px] pointer-events-none z-0" />
+
+      {/* ================= AUTHENTICATION MODAL ================= */}
+      <AnimatePresence>
+        {showAuthModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] flex items-center justify-center bg-[#020617]/80 backdrop-blur-md p-4"
+            onClick={() => setShowAuthModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-[#0F172A] border border-[#1E293B] rounded-[2rem] p-6 sm:p-8 max-w-md w-full relative shadow-[0_0_50px_rgba(108,92,231,0.2)] text-center overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Background accent */}
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#6C5CE7] to-[#00B4D8]" />
+
+              <button
+                onClick={() => setShowAuthModal(false)}
+                className="absolute top-4 right-4 p-2 bg-[#1E293B] hover:bg-[#334155] rounded-full text-[#94A3B8] hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="w-16 h-16 bg-[#6C5CE7]/10 rounded-full flex items-center justify-center mx-auto mb-5 border border-[#6C5CE7]/30 shadow-[0_0_20px_rgba(108,92,231,0.2)]">
+                <UserCircle2 className="w-8 h-8 text-[#6C5CE7]" />
+              </div>
+
+              <h3 className="text-2xl font-[900] text-white mb-2">
+                Authentication Required
+              </h3>
+              <p className="text-[#94A3B8] text-sm font-[500] mb-8 px-2">
+                You need to log in or create an account to proceed with your
+                checkout and secure these seats.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={() =>
+                    navigate("/login", { state: { from: location.pathname } })
+                  }
+                  className="flex-1 bg-gradient-to-r from-[#6C5CE7] to-[#8B78FF] hover:from-[#5A4BCF] hover:to-[#6C5CE7] text-white py-3.5 rounded-xl font-[800] text-sm uppercase tracking-wider transition-all active:scale-95 shadow-[0_0_15px_rgba(108,92,231,0.4)]"
+                >
+                  Log In
+                </button>
+                <button
+                  onClick={() =>
+                    navigate("/register", {
+                      state: { from: location.pathname },
+                    })
+                  }
+                  className="flex-1 bg-[#1E293B] hover:bg-[#334155] text-white border border-[#334155] hover:border-[#94A3B8] py-3.5 rounded-xl font-[800] text-sm uppercase tracking-wider transition-all active:scale-95"
+                >
+                  Register
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Mini-Map / Stadium Overview Modal */}
       <AnimatePresence>
@@ -420,7 +499,6 @@ const SeatSelection = () => {
                                   onClick={() =>
                                     toggleSeatSelection(seat, category)
                                   }
-                                  // Added touch handlers so tapping seats works seamlessly within the panning view
                                   onTouchEnd={(e) => {
                                     e.preventDefault();
                                     toggleSeatSelection(seat, category);

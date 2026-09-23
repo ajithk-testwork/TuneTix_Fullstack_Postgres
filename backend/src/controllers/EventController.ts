@@ -9,6 +9,7 @@ const getParamString = (
   return Array.isArray(value) ? value[0] : value;
 };
 
+
 const uploadToCloudinary = (buffer: Buffer): Promise<string> => {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(

@@ -20,7 +20,6 @@ export const createBooking = async (
     const { eventId, seatIds } = req.body;
 
 
-
     if (!eventId || !Array.isArray(seatIds) || seatIds.length === 0) {
       res.status(400).json({
         success: false,
@@ -41,7 +40,6 @@ export const createBooking = async (
     }
 
 
-
     const event = await prisma.event.findUnique({
       where: {
         id: eventId,
@@ -56,6 +54,7 @@ export const createBooking = async (
       return;
     }
 
+   
 
     const seats = await prisma.seat.findMany({
       where: {
@@ -76,6 +75,7 @@ export const createBooking = async (
       return;
     }
 
+   
 
     await prisma.seat.updateMany({
       where: {
@@ -95,12 +95,14 @@ export const createBooking = async (
     });
 
 
+
     let totalAmount = 0;
 
     seats.forEach((seat) => {
       totalAmount += seat.category.price;
     });
 
+  
 
     const booking = await prisma.$transaction(
       async (tx) => {
@@ -108,7 +110,7 @@ export const createBooking = async (
 
         const lockUntil = new Date(now.getTime() + 10 * 60 * 1000);
 
-    
+     
 
         const lockedSeats = await tx.seat.updateMany({
           where: {
@@ -142,11 +144,12 @@ export const createBooking = async (
           throw new Error("One or more selected seats are no longer available");
         }
 
-    
+
 
         const ticketNumber = await generateTicketNumber();
 
-   
+       
+
         const newBooking = await tx.booking.create({
           data: {
             userId,
@@ -162,6 +165,7 @@ export const createBooking = async (
         });
 
        
+
         await tx.bookingSeat.createMany({
           data: uniqueSeatIds.map((seatId: string) => ({
             bookingId: newBooking.id,
@@ -179,7 +183,6 @@ export const createBooking = async (
       },
     );
 
-   
 
     res.status(201).json({
       success: true,
